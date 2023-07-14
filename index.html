@@ -16,13 +16,9 @@
     const threshold = 1; // Adjust the threshold value based on your requirements
 
     function startStepCounter() {
-      if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', motionHandler, false);
-        document.getElementById('startButton').disabled = true;
-        document.getElementById('stopButton').disabled = false;
-      } else {
-        console.log('DeviceMotionEvent not supported');
-      }
+      window.addEventListener('devicemotion', motionHandler, false);
+      document.getElementById('startButton').disabled = true;
+      document.getElementById('stopButton').disabled = false;
     }
 
     function stopStepCounter() {
@@ -40,10 +36,10 @@
 
         if (!isStepDetected && deltaY > threshold) {
           isStepDetected = true;
-        } else if (isStepDetected && deltaY <= threshold) {
-          isStepDetected = false;
           stepCount++;
           document.getElementById('stepCount').textContent = stepCount;
+        } else if (isStepDetected && deltaY <= threshold) {
+          isStepDetected = false;
         }
       }
 
