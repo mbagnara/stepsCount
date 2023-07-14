@@ -14,7 +14,8 @@
     let sensor;
     let isStepDetected = false;
     let previousAcceleration = 0;
-    const threshold = 10; // Adjust the threshold value based on your requirements
+    const accelerationData = [];
+    const thresholdFactor = 1.2; // Adjust the threshold factor based on your requirements
     const stepDelay = 1000; // Adjust the step delay (in milliseconds) based on your requirements
 
     function generateRandomColor() {
@@ -35,6 +36,11 @@
     // Set random background color on initial page load
     setRandomBackgroundColor();
 
+    function calculateThreshold() {
+      const maxAcceleration = Math.max(...accelerationData);
+      return maxAcceleration * thresholdFactor;
+    }
+
     function startStepCounter() {
       if ('Accelerometer' in window) {
         sensor = new Accelerometer({ frequency: 60 });
@@ -42,15 +48,23 @@
         sensor.addEventListener('reading', () => {
           const acceleration = Math.hypot(sensor.x, sensor.y, sensor.z);
 
-          if (!isStepDetected && acceleration > threshold && acceleration > previousAcceleration) {
-            isStepDetected = true;
-            setTimeout(() => {
+          accelerationData.push(acceleration);
+
+          if (accelerationData.length > 10) {
+            accelerationData.shift();
+
+            const threshold = calculateThreshold();
+
+            if (!isStepDetected && acceleration > threshold && acceleration > previousAcceleration) {
+              isStepDetected = true;
+              setTimeout(() => {
+                isStepDetected = false;
+              }, stepDelay);
+            } else if (isStepDetected && acceleration <= threshold) {
               isStepDetected = false;
-            }, stepDelay);
-          } else if (isStepDetected && acceleration <= threshold) {
-            isStepDetected = false;
-            stepCount++;
-            document.getElementById('stepCount').textContent = stepCount;
+              stepCount++;
+              document.getElementById('stepCount').textContent = stepCount;
+            }
           }
 
           previousAcceleration = acceleration;
@@ -70,6 +84,7 @@
         sensor.stop();
         sensor = null;
         isStepDetected = false;
+        accelerationData.length = 0;
 
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
