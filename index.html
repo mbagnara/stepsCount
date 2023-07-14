@@ -2,12 +2,6 @@
 <html>
 <head>
   <title>Step Counter</title>
-  <style>
-    body {
-      background-color: #000; /* Default background color */
-      color: #fff;
-    }
-  </style>
 </head>
 <body>
   <h1>Step Counter</h1>
@@ -19,6 +13,7 @@
     let stepCount = 0;
     let sensor;
     let isStepDetected = false;
+    let previousAcceleration = 0;
     const threshold = 10; // Adjust the threshold value based on your requirements
     const stepDelay = 1000; // Adjust the step delay (in milliseconds) based on your requirements
 
@@ -47,7 +42,7 @@
         sensor.addEventListener('reading', () => {
           const acceleration = Math.hypot(sensor.x, sensor.y, sensor.z);
 
-          if (!isStepDetected && acceleration > threshold) {
+          if (!isStepDetected && acceleration > threshold && acceleration > previousAcceleration) {
             isStepDetected = true;
             setTimeout(() => {
               isStepDetected = false;
@@ -57,6 +52,8 @@
             stepCount++;
             document.getElementById('stepCount').textContent = stepCount;
           }
+
+          previousAcceleration = acceleration;
         });
 
         sensor.start();
