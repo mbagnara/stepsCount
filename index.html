@@ -11,39 +11,38 @@
 
   <script>
     let stepCount = 0;
-    let isStepDetected = false;
-    let previousY = null;
-    const threshold = 1; // Adjust the threshold value based on your requirements
+    let isStepCounterAvailable = false;
+    let stepSensor;
 
     function startStepCounter() {
-      window.addEventListener('devicemotion', motionHandler, false);
-      document.getElementById('startButton').disabled = true;
-      document.getElementById('stopButton').disabled = false;
+      if ('ondeviceproximity' in window) {
+        stepSensor = new window.ondeviceproximity();
+        stepSensor.addEventListener('reading', handleStep);
+        stepSensor.start();
+
+        isStepCounterAvailable = true;
+        document.getElementById('startButton').disabled = true;
+        document.getElementById('stopButton').disabled = false;
+      } else {
+        console.log('Step Counter API not supported');
+      }
     }
 
     function stopStepCounter() {
-      window.removeEventListener('devicemotion', motionHandler, false);
-      document.getElementById('startButton').disabled = false;
-      document.getElementById('stopButton').disabled = true;
+      if (stepSensor) {
+        stepSensor.stop();
+        stepSensor.removeEventListener('reading', handleStep);
+        stepSensor = null;
+
+        isStepCounterAvailable = false;
+        document.getElementById('startButton').disabled = false;
+        document.getElementById('stopButton').disabled = true;
+      }
     }
 
-    function motionHandler(event) {
-      const acceleration = event.accelerationIncludingGravity;
-      const currentY = acceleration.y;
-
-      if (previousY !== null) {
-        const deltaY = Math.abs(currentY - previousY);
-
-        if (!isStepDetected && deltaY > threshold) {
-          isStepDetected = true;
-          stepCount++;
-          document.getElementById('stepCount').textContent = stepCount;
-        } else if (isStepDetected && deltaY <= threshold) {
-          isStepDetected = false;
-        }
-      }
-
-      previousY = currentY;
+    function handleStep(event) {
+      stepCount += event.target.value;
+      document.getElementById('stepCount').textContent = stepCount;
     }
 
     document.getElementById('startButton').addEventListener('click', startStepCounter);
