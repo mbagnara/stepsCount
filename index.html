@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Step Counter</title>
+</head>
+<body>
+  <h1>Step Counter</h1>
+  <button id="startButton">Start</button>
+  <button id="stopButton" disabled>Stop</button>
+  <p>Step Count: <span id="stepCount">0</span></p>
+
+  <script>
+    let stepCount = 0;
+    let sensor;
+
+    function startStepCounter() {
+      if ('Accelerometer' in window) {
+        sensor = new Accelerometer({ frequency: 60 });
+
+        sensor.addEventListener('reading', () => {
+          const acceleration = Math.hypot(sensor.x, sensor.y, sensor.z);
+          const threshold = 10; // Adjust the threshold value based on your requirements
+
+          if (acceleration > threshold) {
+            stepCount++;
+            document.getElementById('stepCount').textContent = stepCount;
+          }
+        });
+
+        sensor.start();
+
+        document.getElementById('startButton').disabled = true;
+        document.getElementById('stopButton').disabled = false;
+      } else {
+        console.log('Accelerometer API not supported');
+      }
+    }
+
+    function stopStepCounter() {
+      if (sensor) {
+        sensor.stop();
+        sensor = null;
+
+        document.getElementById('startButton').disabled = false;
+        document.getElementById('stopButton').disabled = true;
+      }
+    }
+
+    document.getElementById('startButton').addEventListener('click', startStepCounter);
+    document.getElementById('stopButton').addEventListener('click', stopStepCounter);
+  </script>
+</body>
+</html>
