@@ -12,6 +12,8 @@
   <script>
     let stepCount = 0;
     let sensor;
+    let isStepDetected = false;
+    const threshold = 10; // Adjust the threshold value based on your requirements
 
     function startStepCounter() {
       if ('Accelerometer' in window) {
@@ -19,11 +21,13 @@
 
         sensor.addEventListener('reading', () => {
           const acceleration = Math.hypot(sensor.x, sensor.y, sensor.z);
-          const threshold = 10; // Adjust the threshold value based on your requirements
 
-          if (acceleration > threshold) {
+          if (!isStepDetected && acceleration > threshold) {
+            isStepDetected = true;
+          } else if (isStepDetected && acceleration <= threshold) {
             stepCount++;
             document.getElementById('stepCount').textContent = stepCount;
+            isStepDetected = false;
           }
         });
 
@@ -40,6 +44,7 @@
       if (sensor) {
         sensor.stop();
         sensor = null;
+        isStepDetected = false;
 
         document.getElementById('startButton').disabled = false;
         document.getElementById('stopButton').disabled = true;
