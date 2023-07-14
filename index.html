@@ -15,26 +15,8 @@
     let isStepDetected = false;
     let previousAcceleration = 0;
     const accelerationData = [];
-    const thresholdFactor = 1.2; // Adjust the threshold factor based on your requirements
+    const thresholdFactor = 1.5; // Adjust the threshold factor based on your requirements
     const stepDelay = 1000; // Adjust the step delay (in milliseconds) based on your requirements
-
-    function generateRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    }
-
-    function setRandomBackgroundColor() {
-      const body = document.body;
-      const randomColor = generateRandomColor();
-      body.style.backgroundColor = randomColor;
-    }
-
-    // Set random background color on initial page load
-    setRandomBackgroundColor();
 
     function calculateThreshold() {
       const maxAcceleration = Math.max(...accelerationData);
