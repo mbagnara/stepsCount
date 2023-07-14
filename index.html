@@ -11,66 +11,43 @@
 
   <script>
     let stepCount = 0;
-    let sensor;
     let isStepDetected = false;
-    let previousAcceleration = 0;
-    const accelerationData = [];
-    const thresholdFactor = 10; // Adjust the threshold factor based on your requirements
-    const stepDelay = 5000; // Adjust the step delay (in milliseconds) based on your requirements
-
-    function calculateThreshold() {
-      const maxAcceleration = Math.max(...accelerationData);
-      return maxAcceleration * thresholdFactor;
-    }
+    let previousY = null;
+    const threshold = 1; // Adjust the threshold value based on your requirements
 
     function startStepCounter() {
-      if ('Accelerometer' in window) {
-        sensor = new Accelerometer({ frequency: 60 });
-
-        sensor.addEventListener('reading', () => {
-          const acceleration = Math.hypot(sensor.x, sensor.y, sensor.z);
-
-          accelerationData.push(acceleration);
-
-          if (accelerationData.length > 10) {
-            accelerationData.shift();
-
-            const threshold = calculateThreshold();
-
-            if (!isStepDetected && acceleration > threshold && acceleration > previousAcceleration) {
-              isStepDetected = true;
-              setTimeout(() => {
-                isStepDetected = false;
-              }, stepDelay);
-            } else if (isStepDetected && acceleration <= threshold) {
-              isStepDetected = false;
-              stepCount++;
-              document.getElementById('stepCount').textContent = stepCount;
-            }
-          }
-
-          previousAcceleration = acceleration;
-        });
-
-        sensor.start();
-
+      if (window.DeviceMotionEvent) {
+        window.addEventListener('devicemotion', motionHandler, false);
         document.getElementById('startButton').disabled = true;
         document.getElementById('stopButton').disabled = false;
       } else {
-        console.log('Accelerometer API not supported');
+        console.log('DeviceMotionEvent not supported');
       }
     }
 
     function stopStepCounter() {
-      if (sensor) {
-        sensor.stop();
-        sensor = null;
-        isStepDetected = false;
-        accelerationData.length = 0;
+      window.removeEventListener('devicemotion', motionHandler, false);
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('stopButton').disabled = true;
+    }
 
-        document.getElementById('startButton').disabled = false;
-        document.getElementById('stopButton').disabled = true;
+    function motionHandler(event) {
+      const acceleration = event.accelerationIncludingGravity;
+      const currentY = acceleration.y;
+
+      if (previousY !== null) {
+        const deltaY = Math.abs(currentY - previousY);
+
+        if (!isStepDetected && deltaY > threshold) {
+          isStepDetected = true;
+        } else if (isStepDetected && deltaY <= threshold) {
+          isStepDetected = false;
+          stepCount++;
+          document.getElementById('stepCount').textContent = stepCount;
+        }
       }
+
+      previousY = currentY;
     }
 
     document.getElementById('startButton').addEventListener('click', startStepCounter);
