@@ -14,6 +14,7 @@
     let sensor;
     let isStepDetected = false;
     const threshold = 10; // Adjust the threshold value based on your requirements
+    const stepDelay = 1000; // Adjust the step delay (in milliseconds) based on your requirements
 
     function startStepCounter() {
       if ('Accelerometer' in window) {
@@ -24,10 +25,13 @@
 
           if (!isStepDetected && acceleration > threshold) {
             isStepDetected = true;
+            setTimeout(() => {
+              isStepDetected = false;
+            }, stepDelay);
           } else if (isStepDetected && acceleration <= threshold) {
+            isStepDetected = false;
             stepCount++;
             document.getElementById('stepCount').textContent = stepCount;
-            isStepDetected = false;
           }
         });
 
